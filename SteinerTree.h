@@ -7,7 +7,6 @@ class SteinerTreeProblem{
 		~SteinerTreeProblem(){
 		
 		}
-	private:
 		vector<vector<int> > adj;
 		vector<pair<int, int> > edges;
 };
