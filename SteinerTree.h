@@ -4,7 +4,7 @@ using namespace std;
 
 struct edge{
 	long long w;
-	int u, int v;
+	int u, v;
 	edge(int u, int v, long long w){
 		this->u = u;
 		this->v = v;
@@ -15,7 +15,7 @@ struct edge{
 	}
 };
 
-friend bool operator< (const edge& a, const edge& b){
+bool operator< (const edge& a, const edge& b){
 	return a.w < b.w;
 }
 
@@ -30,6 +30,8 @@ class SteinerTreeProblem{
 		}
 		vector<vector<pair<int, long long> > > adj;
 		vector<edge> edges;
+		vector<bool> fixed;
+		int n, m;
 };
 
 
@@ -47,7 +49,7 @@ class DSU{
 		void join(int u, int v);
 		void reset();
 		vector<int> p;
-		unordered_set used;
+		unordered_set<int> used;
 };
 
 DSU dsu; 
@@ -56,18 +58,19 @@ class SteinerTree{
 	public:
 		SteinerTree(){
 		
-		{
+		}
 		~SteinerTree(){
 		
 		}
-		void restart();
-		double getDistance(SteinerTree &ind);
-		friend ostream& operator<< (ostream &os, const SteinerTree &ST);
-		void print(ostream &os) const;
-		void dependentMutation(double pm);
+		//void restart();
+		//double getDistance(SteinerTree &ind);
+		//ostream& operator<< (ostream &os, const SteinerTree &ST);
+		//void print(ostream &os) const;
+		//void dependentMutation(double pm);
 		void localSearch();
-		void dependentCrossover(SteinerTree *ind);
-		void calculateFitness();
+		void hillClimbing();
+		//void dependentCrossover(SteinerTree *ind);
+		bool calculateFitness();
 		void insert(int u);
 		void erase(int u);
 		vector<bool> I;
