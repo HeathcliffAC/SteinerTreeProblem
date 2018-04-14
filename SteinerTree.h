@@ -16,7 +16,9 @@ struct edge{
 };
 
 bool operator< (const edge& a, const edge& b){
-	return a.w < b.w;
+	if(a.w < b.w) return true;
+	else if(a.w > b.w) return false;
+	else return make_pair(a.u, a.v) < make_pair(b.u, b.v);
 }
 
 class SteinerTreeProblem{
@@ -62,7 +64,9 @@ class SteinerTree{
 		~SteinerTree(){
 		
 		}
-		//void restart();
+		void restart();
+		void reset(vector<bool> &nI);
+		long long calculateFitnessComplete();
 		//double getDistance(SteinerTree &ind);
 		//ostream& operator<< (ostream &os, const SteinerTree &ST);
 		//void print(ostream &os) const;
