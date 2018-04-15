@@ -31,6 +31,7 @@ class SteinerTreeProblem{
 		vector<vector<pair<int, long long> > > adj;
 		vector<edge> edges;
 		vector<bool> fixed;
+		vector<int> fs;
 		int n, m;
 };
 
@@ -75,6 +76,7 @@ class SteinerTree{
 		void hillClimbing();
 		void dependentCrossover(SteinerTree &ind);
 		void uniformCrossover(SteinerTree &ind);
+		void addCrossover(SteinerTree &ind2);
 		bool calculateFitness();
 		void insert(int u);
 		void erase(int u);

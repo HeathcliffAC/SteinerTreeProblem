@@ -76,15 +76,13 @@ bool SteinerTree::calculateFitness(){
 		}
 	}
 	bool connected = true;
-	int Su = dsu.used.empty() ? -1 : dsu.getS(*(dsu.used.begin()));
-	FOREACH(v, dsu.used) if(dsu.getS(*v) != Su) connected = false;
-	int t = 0;
-	for(int u = 0; u < (SteinerTreeproblem->n); u++) if(I[u]) t++;
-	connected = (c == t - 1);
-	/*if(c != t - 1){
-		printf("NO = %d, %d\n", c, t);
-		getchar();
-	}*/
+	int Su = -1;
+	Su = dsu.getS((SteinerTreeproblem->fs)[0]);
+	FOREACH(u, SteinerTreeproblem->fs) if(dsu.getS(*u) != Su) connected = false;
+	//FOREACH(v, dsu.used) if(dsu.getS(*v) != Su) connected = false;
+	//int t = 0;
+	//for(int u = 0; u < (SteinerTreeproblem->n); u++) if((SteinerTreeproblem->fixed)[u] && dsu.getS(u) != Su) connected = false;
+	//connected = (c == t - 1);
 	if(connected){
 		queue<int> q;
 		FOREACH(v, dsu.used) if(cnt[*v] == 1 && !(SteinerTreeproblem->fixed)[*v]) q.push(*v);
@@ -100,13 +98,6 @@ bool SteinerTree::calculateFitness(){
 		}
 	}
 	else fitness = (long long)1e15;
-	/*if(fitness == 0){
-		for(int u = 0; u < (SteinerTreeproblem->n); u++) if((SteinerTreeproblem->fixed)[u]) printf("%d ", I[u] ? 1 : 0);
-		printf("\n");
-		printf("connected = %d\n", connected ? 1 : 0);
-		FOREACH(e, edges) printf("%d %d\n", e->u, e->v);
-		getchar();
-	}*/
 	dsu.reset();
 	return connected;
 }
@@ -177,7 +168,7 @@ void SteinerTree::hillClimbing(){
 			noImprove++;
 			reset(nI);
 			//printf("noImprove = %d\n", noImprove);
-			if(noImprove > 1000) return;
+			if(noImprove > 100) return;
 		}
 		//if(done) break;
 	}
@@ -186,6 +177,7 @@ void SteinerTree::hillClimbing(){
 void SteinerTree::localSearch(){
 	//while(true){
 		hillClimbing();
+		printf("fitness = %lld %lld\n", fitness, best);
 	/*	int u = 1;
 		while(!I[u]) u = rand()%(SteinerTreeproblem->n);
 		vector<bool> nI = I;
@@ -235,6 +227,7 @@ SteinerTreeProblem::SteinerTreeProblem(const string &fileName){
 	for(int i = 0; i < T; i++){
 		ifs >> s >> u; u--;
 		fixed[u] = true;
+		fs.push_back(u);
 	}
 }
 
@@ -245,7 +238,14 @@ void SteinerTree::restart(){
 		FOREACH(v, (SteinerTreeproblem->adj)[u]) if(v->first < u){
 			edges.insert(edge(v->first, u, v->second));
 		}
+	for(int u = 0; u < SteinerTreeproblem->n; u++) if(!(SteinerTreeproblem->fixed)[u] && rand()/(RAND_MAX + 1.0) < 0.2){
+		I[u] = false;
+		FOREACH(v, (SteinerTreeproblem->adj)[u]) edges.erase(edge(min(u, v->first), max(u, v->first), v->second));
+	}
 	dsu = DSU((int)I.size());
+	
+	
+	
 	localSearch();
 }
 
@@ -276,9 +276,29 @@ void SteinerTree::mutate(double pm){
 	}
 }*/
 
+void SteinerTree::addCrossover(SteinerTree &ind2){
+	for (int i = 0; i < I.size(); i++){
+		if (I[i]){
+			if (generateRandomDouble0_Max(1) < 0.5){
+				ind2.I[i] = true;
+			}
+		}
+	}
+	for (int i = 0; i < I.size(); i++){
+		if (ind2.I[i]){
+			if (generateRandomDouble0_Max(1) < 0.5){
+				I[i] = true;
+			}
+		}
+	}
+	reset(I);
+	ind2.reset(ind2.I);
+}
+
 void SteinerTree::uniformCrossover(SteinerTree &ind){
 	for(int i = 0; i < (SteinerTreeproblem->n); i++)
 		if(rand()%2 == 0) swap(I[i], (ind.I)[i]);
+	
 	reset(I);
 	ind.reset(ind.I);
 }
@@ -308,11 +328,11 @@ void SteinerTree::uniformMutation(double pm){
 }
 
 void SteinerTree::dependentMutation(double pm){
-	uniformMutation(pm);
+	pathMutation(pm);
 }
 
 void SteinerTree::dependentCrossover(SteinerTree &ind){
-	uniformCrossover(ind);
+	addCrossover(ind);
 }
 
 // Guarda en mst el minimum spanning tree del individuo
