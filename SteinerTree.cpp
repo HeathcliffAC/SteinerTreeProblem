@@ -231,6 +231,7 @@ SteinerTreeProblem::SteinerTreeProblem(const string &fileName){
 	}
 }
 
+bool first = true;
 void SteinerTree::restart(){
 	I.resize(SteinerTreeproblem->n);
 	for(int i = 0; i < (int)I.size(); i++) I[i] = true;
@@ -238,10 +239,13 @@ void SteinerTree::restart(){
 		FOREACH(v, (SteinerTreeproblem->adj)[u]) if(v->first < u){
 			edges.insert(edge(v->first, u, v->second));
 		}
-	for(int u = 0; u < SteinerTreeproblem->n; u++) if(!(SteinerTreeproblem->fixed)[u] && rand()/(RAND_MAX + 1.0) < 0.2){
-		I[u] = false;
-		FOREACH(v, (SteinerTreeproblem->adj)[u]) edges.erase(edge(min(u, v->first), max(u, v->first), v->second));
+	if(!first){
+		for(int u = 0; u < SteinerTreeproblem->n; u++) if(!(SteinerTreeproblem->fixed)[u] && rand()/(RAND_MAX + 1.0) < 0.2){
+			I[u] = false;
+			FOREACH(v, (SteinerTreeproblem->adj)[u]) edges.erase(edge(min(u, v->first), max(u, v->first), v->second));
+		}
 	}
+	else first = false;
 	dsu = DSU((int)I.size());
 	
 	
