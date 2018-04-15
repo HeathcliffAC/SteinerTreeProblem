@@ -1,7 +1,7 @@
 #include "MA.h"
 
 int main(int argc, char **argv){
-	int N = 20;
+	int N = 10;
 	double pc = 0.9;
 	double pm = 0.01;
 	double finalTime = 5 * 60;

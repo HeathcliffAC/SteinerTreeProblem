@@ -48,14 +48,14 @@ void MA::crossover(){
 	}
 	for (int i = 0; i < offspring.size(); i+=2){
 		if (generateRandomDouble0_Max(1) <= pc){
-			offspring[i]->ind.crossover(offspring[i+1]->ind);
+			offspring[i]->ind.dependentCrossover(offspring[i+1]->ind);
 		}
 	}
 }
 
 void MA::mutation(){
 	for (int i = 0; i < offspring.size(); i++){
-		offspring[i]->ind.mutate(pm);
+		offspring[i]->ind.dependentMutation(pm);
 	}
 }
 

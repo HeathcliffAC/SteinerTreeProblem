@@ -2,7 +2,6 @@
 #include "utils.h"
 using namespace std;
 
-<<<<<<< HEAD
 SteinerTreeProblem* SteinerTree::SteinerTreeproblem;
 DSU dsu; 
 bool operator< (const edge& a, const edge& b){
@@ -11,11 +10,7 @@ bool operator< (const edge& a, const edge& b){
 	else return make_pair(a.u, a.v) < make_pair(b.u, b.v);
 }
 
-
-=======
-
 ///////////////////// Funciones de un union find disjoints sets ///////////////////////////////
->>>>>>> d02a960a3560b3f4e8f65433574d30c10227f177
 DSU::DSU(int n){
 	p.resize(n + 1);
 	for(int i = 0; i <= n; i++) p[i] = i;
@@ -172,23 +167,17 @@ void SteinerTree::hillClimbing(){
 				}
 			}
 			else{
-				/*
 				insert(p[i]);
 				if(fitness < F){
 					noImprove = 0;
 					done = false;
 					continue;
-				}*/
+				}
 			}
 			noImprove++;
 			reset(nI);
-<<<<<<< HEAD
 			//printf("noImprove = %d\n", noImprove);
-			if(noImprove > 100) return;
-=======
-			printf("noImprove = %d\n", noImprove);
 			if(noImprove > 1000) return;
->>>>>>> d02a960a3560b3f4e8f65433574d30c10227f177
 		}
 		//if(done) break;
 	}
@@ -196,22 +185,9 @@ void SteinerTree::hillClimbing(){
 
 void SteinerTree::localSearch(){
 	//while(true){
-	//for (int rep = 0; rep < 10; rep++){//TODO: hay que modificarlo para que devuelva lo mejor encontrado
 		hillClimbing();
-<<<<<<< HEAD
-	/*	for(int i = 0; i < 20; i++){
-			int u = rand()%(SteinerTreeproblem->n);
-			FOREACH(v, (SteinerTreeproblem->adj)[u]) if(I[v->first]){
-				insert(u);
-				break;
-			}
-		}*/
-	//}
-=======
-		int u = 1;
+	/*	int u = 1;
 		while(!I[u]) u = rand()%(SteinerTreeproblem->n);
-		//printf("u = %d\n", u); getchar();
-	
 		vector<bool> nI = I;
 		for(int i = 0; i < 500; i++){
 			nI[u] = true;
@@ -219,8 +195,7 @@ void SteinerTree::localSearch(){
 			u = (SteinerTreeproblem->adj)[u][id].first;
 		}
 		reset(nI);
-	}
->>>>>>> d02a960a3560b3f4e8f65433574d30c10227f177
+	}*/
 }
 
 void SteinerTree::reset(vector<bool> &nI){
@@ -274,19 +249,8 @@ void SteinerTree::restart(){
 	localSearch();
 }
 
-<<<<<<< HEAD
-int SteinerTree::getDistance(SteinerTree &ind2){
-	int distance = 0;
-	for (int i = 0; i < I.size(); i++){
-		if (I[i] != ind2.I[i]){
-			distance++;
-		}
-	}
-	return distance;
-}
-
 //Se incluyen algunos del otro y se dejan todos los que estan
-void SteinerTree::crossover(SteinerTree &ind2){
+/*void SteinerTree::crossover(SteinerTree &ind2){
 	for (int i = 0; i < I.size(); i++){
 		if (I[i]){
 			if (generateRandomDouble0_Max(1) < 0.5){
@@ -301,25 +265,26 @@ void SteinerTree::crossover(SteinerTree &ind2){
 			}
 		}
 	}
-}
+}*/
 
+/*
 void SteinerTree::mutate(double pm){
 	for (int i = 0; i < I.size(); i++){
 		if (generateRandomDouble0_Max(1) < pm){
 			I[i] = true;
 		}
 	}
-}
-=======
-void SteinerTree::uniformCrossover(SteinerTree* ind){
+}*/
+
+void SteinerTree::uniformCrossover(SteinerTree &ind){
 	for(int i = 0; i < (SteinerTreeproblem->n); i++)
-		if(rand()%2 == 0) swap(I[i], (ind->I)[i]);
+		if(rand()%2 == 0) swap(I[i], (ind.I)[i]);
 	reset(I);
-	ind->reset(ind->I);
+	ind.reset(ind.I);
 }
 
-double SteinerTree::getDistance(SteinerTree &ind){
-	double ans = 0;
+int SteinerTree::getDistance(SteinerTree &ind){
+	int ans = 0;
 	for(int i = 0; i < (SteinerTreeproblem->n); i++)
 		if(I[i] != (ind.I)[i]) ans++;
 	return ans;
@@ -346,7 +311,7 @@ void SteinerTree::dependentMutation(double pm){
 	uniformMutation(pm);
 }
 
-void SteinerTree::dependentCrossover(SteinerTree *ind){
+void SteinerTree::dependentCrossover(SteinerTree &ind){
 	uniformCrossover(ind);
 }
 
@@ -364,21 +329,3 @@ void SteinerTree::getMST(unordered_map<int, vector<pair<int, long long> > > &mst
 }
 
 //fetuchini alfredo camarones
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> d02a960a3560b3f4e8f65433574d30c10227f177

@@ -64,7 +64,7 @@ class SteinerTree{
 		void restart();
 		void reset(vector<bool> &nI);
 		long long calculateFitnessComplete();
-		double getDistance(SteinerTree &ind);
+		int getDistance(SteinerTree &ind);
 		//ostream& operator<< (ostream &os, const SteinerTree &ST);
 		//void print(ostream &os) const;
 		void getMST(unordered_map<int, vector<pair<int, long long> > > &mst);
@@ -72,16 +72,9 @@ class SteinerTree{
 		void uniformMutation(double pm);
 		void pathMutation(int k);
 		void localSearch();
-		void crossover(SteinerTree &ind2);//Modifies both "this" and "ind2"
-		void mutate(double pm);
 		void hillClimbing();
-<<<<<<< HEAD
-		int getDistance(SteinerTree &ind2);
-		//void dependentCrossover(SteinerTree *ind);
-=======
-		void dependentCrossover(SteinerTree* ind);
-		void uniformCrossover(SteinerTree* ind);
->>>>>>> d02a960a3560b3f4e8f65433574d30c10227f177
+		void dependentCrossover(SteinerTree &ind);
+		void uniformCrossover(SteinerTree &ind);
 		bool calculateFitness();
 		void insert(int u);
 		void erase(int u);
