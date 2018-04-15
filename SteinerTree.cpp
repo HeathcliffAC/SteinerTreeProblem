@@ -352,4 +352,20 @@ void SteinerTree::getMST(unordered_map<int, vector<pair<int, long long> > > &mst
 	dsu.reset();
 }
 
+void SteinerTree::print(unordered_map<int, vector<pair<int, long long> > > &mst){
+    unordered_map<int, vector<pair<int, long long> > >::iterator it;
+
+    long long cost = 0;
+    for(it = mst.begin(); it != mst.end(); it ++)
+        cost += it->second.second;
+    
+    cost = cost/2;
+
+    cout << "VALUE " << cost << endl;
+
+    for(it = mst.begin(); it != mst.end(); it ++)
+        if(it->first < it->second.first)
+            cout << it->first << " " << it->second.first << endl;
+}
+
 //fetuchini alfredo camarones
