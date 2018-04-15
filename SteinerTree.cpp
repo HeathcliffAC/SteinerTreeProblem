@@ -1,5 +1,8 @@
 #include "SteinerTree.h"
 using namespace std;
+
+
+///////////////////// Funciones de un union find disjoints sets ///////////////////////////////
 DSU::DSU(int n){
 	p.resize(n + 1);
 	for(int i = 0; i <= n; i++) p[i] = i;
@@ -28,6 +31,10 @@ void DSU::reset(){
 	used.clear();
 }
 
+
+//////////////////////////// Funciones del individuo ////////////////////////////////
+
+// Calcula el fitness "por fuerza bruta"
 long long SteinerTree::calculateFitnessComplete(){
 	long long F = 0;
 	dsu = DSU(SteinerTreeproblem->n);
@@ -41,6 +48,8 @@ long long SteinerTree::calculateFitnessComplete(){
 	return F;
 }
 
+
+// Calcula fitness, devuelve si esta conectado, poda las hojas no necesarias
 bool SteinerTree::calculateFitness(){
 	fitness = 0;
 	unordered_map<int, int> cnt;
@@ -64,7 +73,7 @@ bool SteinerTree::calculateFitness(){
 	int t = 0;
 	for(int u = 0; u < (SteinerTreeproblem->n); u++) if(I[u]) t++;
 	connected = (c == t - 1);
-	/*if(connected && c != t - 1){
+	/*if(c != t - 1){
 		printf("NO = %d, %d\n", c, t);
 		getchar();
 	}*/
@@ -94,6 +103,7 @@ bool SteinerTree::calculateFitness(){
 	return connected;
 }
 
+// Inserta el nodo u al individuo
 void SteinerTree::insert(int u){
 	if(!I[u]){
 		I[u] = true;
@@ -106,6 +116,8 @@ void SteinerTree::insert(int u){
 	}
 }
 
+
+// Elimina el nodo u del individuo
 void SteinerTree::erase(int u){
 	if(I[u]){
 		I[u] = false;
@@ -119,6 +131,8 @@ void SteinerTree::erase(int u){
 }
 
 long long best = 1e16;
+
+// Primera implementacion de una busqueda por escalada
 void SteinerTree::hillClimbing(){
 	vector<int> p(SteinerTreeproblem->n);
 	for(int i = 0; i < SteinerTreeproblem->n; i++) p[i] = i;
@@ -136,6 +150,7 @@ void SteinerTree::hillClimbing(){
 			if(I[p[i]]){
 				erase(p[i]);
 				if(fitness < F){
+					noImprove = 0;
 					done = false;
 					continue;
 				}
@@ -143,6 +158,7 @@ void SteinerTree::hillClimbing(){
 			else{
 				insert(p[i]);
 				if(fitness < F){
+					noImprove = 0;
 					done = false;
 					continue;
 				}
@@ -150,22 +166,26 @@ void SteinerTree::hillClimbing(){
 			noImprove++;
 			reset(nI);
 			printf("noImprove = %d\n", noImprove);
-			if(noImprove > 100) return;
+			if(noImprove > 1000) return;
 		}
-		if(done) break;
+		//if(done) break;
 	}
 }
 
 void SteinerTree::localSearch(){
 	while(true){
 		hillClimbing();
-		for(int i = 0; i < 20; i++){
-			int u = rand()%(SteinerTreeproblem->n);
-			FOREACH(v, (SteinerTreeproblem->adj)[u]) if(I[v->first]){
-				insert(u);
-				break;
-			}
+		int u = 1;
+		while(!I[u]) u = rand()%(SteinerTreeproblem->n);
+		//printf("u = %d\n", u); getchar();
+	
+		vector<bool> nI = I;
+		for(int i = 0; i < 500; i++){
+			nI[u] = true;
+			int id = rand()%((int)(SteinerTreeproblem->adj)[u].size());
+			u = (SteinerTreeproblem->adj)[u][id].first;
 		}
+		reset(nI);
 	}
 }
 
@@ -219,4 +239,74 @@ void SteinerTree::restart(){
 	dsu = DSU((int)I.size());
 	localSearch();
 }
+
+void SteinerTree::uniformCrossover(SteinerTree* ind){
+	for(int i = 0; i < (SteinerTreeproblem->n); i++)
+		if(rand()%2 == 0) swap(I[i], (ind->I)[i]);
+	reset(I);
+	ind->reset(ind->I);
+}
+
+double SteinerTree::getDistance(SteinerTree &ind){
+	double ans = 0;
+	for(int i = 0; i < (SteinerTreeproblem->n); i++)
+		if(I[i] != (ind.I)[i]) ans++;
+	return ans;
+}
+
+void SteinerTree::pathMutation(int k){
+	int u = 1;
+	while(!I[u]) u = rand()%(SteinerTreeproblem->n);
+	for(int i = 0; i < k; i++){
+		I[u] = true;
+		int id = rand()%((int)(SteinerTreeproblem->adj)[u].size());
+		u = (SteinerTreeproblem->adj)[u][id].first;
+	}
+	reset(I);
+}
+
+void SteinerTree::uniformMutation(double pm){
+	for(int i = 0; i < (SteinerTreeproblem->n); i++)
+		if(rand()/(RAND_MAX + 1.0) < pm) I[i] = !I[i];
+	reset(I);
+}
+
+void SteinerTree::dependentMutation(double pm){
+	uniformMutation(pm);
+}
+
+void SteinerTree::dependentCrossover(SteinerTree *ind){
+	uniformCrossover(ind);
+}
+
+// Guarda en mst el minimum spanning tree del individuo
+void SteinerTree::getMST(unordered_map<int, vector<pair<int, long long> > > &mst){
+	mst.clear();
+	FOREACH(e, edges){
+		if(!dsu.sameSet(e->u, e->v)){
+			dsu.join(e->u, e->v);
+			mst[e->u].push_back(make_pair(e->v, e->w));
+			mst[e->v].push_back(make_pair(e->u, e->w));
+		}
+	}
+	dsu.reset();
+}
+
+//fetuchini alfredo camarones
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
