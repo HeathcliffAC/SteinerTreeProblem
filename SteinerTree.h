@@ -1,3 +1,6 @@
+#ifndef __STEINER_TREE_H__
+#define __STEINER_TREE_H__
+
 #include <bits/stdc++.h>
 using namespace std;
 #define FOREACH(i, v) for (__typeof((v).begin()) i = (v).begin(); i != (v).end(); i++)
@@ -15,11 +18,6 @@ struct edge{
 	}
 };
 
-bool operator< (const edge& a, const edge& b){
-	if(a.w < b.w) return true;
-	else if(a.w > b.w) return false;
-	else return make_pair(a.u, a.v) < make_pair(b.u, b.v);
-}
 
 class SteinerTreeProblem{
 	public:
@@ -54,7 +52,6 @@ class DSU{
 		unordered_set<int> used;
 };
 
-DSU dsu; 
 
 class SteinerTree{
 	public:
@@ -72,7 +69,10 @@ class SteinerTree{
 		//void print(ostream &os) const;
 		//void dependentMutation(double pm);
 		void localSearch();
+		void crossover(SteinerTree &ind2);//Modifies both "this" and "ind2"
+		void mutate(double pm);
 		void hillClimbing();
+		int getDistance(SteinerTree &ind2);
 		//void dependentCrossover(SteinerTree *ind);
 		bool calculateFitness();
 		void insert(int u);
@@ -80,5 +80,7 @@ class SteinerTree{
 		vector<bool> I;
 		long long fitness;
 		set<edge> edges;
-		SteinerTreeProblem *SteinerTreeproblem;
+		static SteinerTreeProblem *SteinerTreeproblem;
 };
+
+#endif

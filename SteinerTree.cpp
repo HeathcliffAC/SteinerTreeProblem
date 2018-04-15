@@ -1,5 +1,16 @@
 #include "SteinerTree.h"
+#include "utils.h"
 using namespace std;
+
+SteinerTreeProblem* SteinerTree::SteinerTreeproblem;
+DSU dsu; 
+bool operator< (const edge& a, const edge& b){
+	if(a.w < b.w) return true;
+	else if(a.w > b.w) return false;
+	else return make_pair(a.u, a.v) < make_pair(b.u, b.v);
+}
+
+
 DSU::DSU(int n){
 	p.resize(n + 1);
 	for(int i = 0; i <= n; i++) p[i] = i;
@@ -129,8 +140,11 @@ void SteinerTree::hillClimbing(){
 		bool done = false;
 		for(int i = 0; i < SteinerTreeproblem->n; i++){
 			if((SteinerTreeproblem->fixed)[p[i]]) continue;
+			if (fitness < best){
+				printf("Fitness = %lld\n", fitness);
+			}
 			best = min(best, fitness);
-			printf("Fitness = %lld %lld\n", fitness, best);
+			//printf("Fitness = %lld %lld\n", fitness, best);
 			long long F = fitness;
 			vector<bool> nI = I;
 			if(I[p[i]]){
@@ -141,15 +155,16 @@ void SteinerTree::hillClimbing(){
 				}
 			}
 			else{
+				/*
 				insert(p[i]);
 				if(fitness < F){
 					done = false;
 					continue;
-				}
+				}*/
 			}
 			noImprove++;
 			reset(nI);
-			printf("noImprove = %d\n", noImprove);
+			//printf("noImprove = %d\n", noImprove);
 			if(noImprove > 100) return;
 		}
 		if(done) break;
@@ -157,16 +172,17 @@ void SteinerTree::hillClimbing(){
 }
 
 void SteinerTree::localSearch(){
-	while(true){
+	//while(true){
+	//for (int rep = 0; rep < 10; rep++){//TODO: hay que modificarlo para que devuelva lo mejor encontrado
 		hillClimbing();
-		for(int i = 0; i < 20; i++){
+	/*	for(int i = 0; i < 20; i++){
 			int u = rand()%(SteinerTreeproblem->n);
 			FOREACH(v, (SteinerTreeproblem->adj)[u]) if(I[v->first]){
 				insert(u);
 				break;
 			}
-		}
-	}
+		}*/
+	//}
 }
 
 void SteinerTree::reset(vector<bool> &nI){
@@ -220,3 +236,38 @@ void SteinerTree::restart(){
 	localSearch();
 }
 
+int SteinerTree::getDistance(SteinerTree &ind2){
+	int distance = 0;
+	for (int i = 0; i < I.size(); i++){
+		if (I[i] != ind2.I[i]){
+			distance++;
+		}
+	}
+	return distance;
+}
+
+//Se incluyen algunos del otro y se dejan todos los que estan
+void SteinerTree::crossover(SteinerTree &ind2){
+	for (int i = 0; i < I.size(); i++){
+		if (I[i]){
+			if (generateRandomDouble0_Max(1) < 0.5){
+				ind2.I[i] = true;
+			}
+		}
+	}
+	for (int i = 0; i < I.size(); i++){
+		if (ind2.I[i]){
+			if (generateRandomDouble0_Max(1) < 0.5){
+				I[i] = true;
+			}
+		}
+	}
+}
+
+void SteinerTree::mutate(double pm){
+	for (int i = 0; i < I.size(); i++){
+		if (generateRandomDouble0_Max(1) < pm){
+			I[i] = true;
+		}
+	}
+}
