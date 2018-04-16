@@ -130,6 +130,17 @@ void SteinerTree::erase(int u){
 }
 
 long long best = 1e16;
+SteinerTree bestI;
+
+void printBest(){
+	unordered_map<int, vector<pair<int, long long> > > mst;
+	bestI.getMST(mst);
+	//bestI.print(mst);
+	printf("%s\n", bestI.isCorrect(mst) ? "YES" : "NO");
+	getchar();
+}
+
+
 
 // Primera implementacion de una busqueda por escalada
 void SteinerTree::hillClimbing(){
@@ -143,9 +154,12 @@ void SteinerTree::hillClimbing(){
 		for(int i = 0; i < SteinerTreeproblem->n; i++){
 			if((SteinerTreeproblem->fixed)[p[i]]) continue;
 			if (fitness < best){
-				printf("Fitness = %lld\n", fitness);
+				//printf("Fitness = %lld\n", fitness);
+				best = fitness;
+				bestI = *this;
+				//printBest();
 			}
-			best = min(best, fitness);
+			//best = min(best, fitness);
 			//printf("Fitness = %lld %lld\n", fitness, best);
 			long long F = fitness;
 			vector<bool> nI = I;
@@ -167,27 +181,52 @@ void SteinerTree::hillClimbing(){
 			}
 			noImprove++;
 			reset(nI);
-			//printf("noImprove = %d\n", noImprove);
-			if(noImprove > 100) return;
+			if(noImprove > 10) return;
 		}
-		//if(done) break;
 	}
 }
 
-void SteinerTree::localSearch(){
-	//while(true){
-		hillClimbing();
-		printf("fitness = %lld %lld\n", fitness, best);
-	/*	int u = 1;
-		while(!I[u]) u = rand()%(SteinerTreeproblem->n);
-		vector<bool> nI = I;
-		for(int i = 0; i < 500; i++){
-			nI[u] = true;
-			int id = rand()%((int)(SteinerTreeproblem->adj)[u].size());
-			u = (SteinerTreeproblem->adj)[u][id].first;
+bool SteinerTree::isCorrect(unordered_map<int, vector<pair<int, long long> > > &mst){
+	int cnt = 0;
+	vector<bool> visited(I.size());
+	bool ans = true;
+	FOREACH(u, SteinerTreeproblem->fs){
+		if(!I[*u]){
+			printf("u = %d\n", *u);
+			ans = false;
 		}
-		reset(nI);
-	}*/
+		if(!visited[*u]){
+			int totalNodes = 0, totalEdges = 0;
+			queue<int> q; q.push(*u);
+			visited[*u] = true;
+			while(!q.empty()){
+				int v = q.front(); q.pop();
+				totalNodes++;
+				FOREACH(w, mst[v]){
+					if(!visited[w->first]){
+						q.push(w->first);
+						visited[w->first] = true;
+					}
+					if(w->first < v) totalEdges++;
+				}
+			}
+			if(totalEdges != totalNodes - 1){
+				printf("t = %d, t = %d\n", totalEdges, totalNodes);
+				ans = false;
+			}
+			cnt++;
+		}
+	}
+	if(cnt != 1){
+		printf("cnt = %d\n", cnt);
+		ans = false;
+	}
+	return ans;
+}
+
+void SteinerTree::localSearch(){
+	hillClimbing();
+	//printf("fitness = %lld %lld\n", fitness, best);
 }
 
 void SteinerTree::reset(vector<bool> &nI){
@@ -231,9 +270,60 @@ SteinerTreeProblem::SteinerTreeProblem(const string &fileName){
 	}
 }
 
+
+vector<int> p, sz;
+int mx;
+
+void init(vector<bool> &I){
+	p.resize(I.size());
+	sz.resize(I.size());
+	int len = p.size();
+	for(int i = 0; i < len; i++) p[i] = i;
+	for(int i = 0; i < len; i++) sz[i] = (I[i] ? 1 : 0);
+}
+
+int getS(int u){
+	if(p[u] == u) return u;
+	else return p[u] = getS(p[u]);
+}
+
+bool sameS(int u, int v){
+	return getS(u) == getS(v);
+}
+
+void join(int u, int v){
+	u = getS(u), v = getS(v);
+	if(u == v) return;
+	p[u] = v;
+	sz[v] += sz[u];
+	mx = max(mx, sz[v]);
+}
+
+
 bool first = true;
 void SteinerTree::restart(){
-	I.resize(SteinerTreeproblem->n);
+	I.resize(SteinerTreeproblem->n, false);
+	for(int i = 0; i < (int)(SteinerTreeproblem->fs).size(); i++) I[(SteinerTreeproblem->fs)[i]] = true;
+	init(I);
+	int ttl = (int)(SteinerTreeproblem->fs).size();
+	mx = 1;
+	
+	vector<int> vc;
+	for(int i = 0; i < (SteinerTreeproblem->n); i++) if(!I[i]) vc.push_back(i);
+	
+	while(mx != ttl){
+		int id = rand()%((int)vc.size());
+		int u = vc[id];
+		I[u] = true;
+		FOREACH(v, (SteinerTreeproblem->adj)[u]) if(I[v->first]){
+			edges.insert(edge(min(u, v->first), max(u, v->first), v->second));
+			join(u, v->first);
+		}
+		swap(vc[id], vc[(int)vc.size() - 1]);
+		vc.pop_back();
+	}
+	
+	/*
 	for(int i = 0; i < (int)I.size(); i++) I[i] = true;
 	for(int u = 0; u < SteinerTreeproblem->n; u++)
 		FOREACH(v, (SteinerTreeproblem->adj)[u]) if(v->first < u){
@@ -245,7 +335,7 @@ void SteinerTree::restart(){
 			FOREACH(v, (SteinerTreeproblem->adj)[u]) edges.erase(edge(min(u, v->first), max(u, v->first), v->second));
 		}
 	}
-	else first = false;
+	else first = false;*/
 	dsu = DSU((int)I.size());
 	
 	
@@ -332,7 +422,7 @@ void SteinerTree::uniformMutation(double pm){
 }
 
 void SteinerTree::dependentMutation(double pm){
-	pathMutation(pm);
+	pathMutation(100);
 }
 
 void SteinerTree::dependentCrossover(SteinerTree &ind){
@@ -357,15 +447,17 @@ void SteinerTree::print(unordered_map<int, vector<pair<int, long long> > > &mst)
 
     long long cost = 0;
     for(it = mst.begin(); it != mst.end(); it ++)
-        cost += it->second.second;
+    	FOREACH(v, it->second) cost += (v->second);
     
     cost = cost/2;
 
     cout << "VALUE " << cost << endl;
 
     for(it = mst.begin(); it != mst.end(); it ++)
-        if(it->first < it->second.first)
-            cout << it->first << " " << it->second.first << endl;
+    	FOREACH(v, it->second)
+        if(it->first < v->first)
+            cout << it->first << " " << v->first << endl;
 }
 
-//fetuchini alfredo camarones
+
+
