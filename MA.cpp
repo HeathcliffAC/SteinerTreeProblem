@@ -1,12 +1,19 @@
 #include <sys/time.h>
 #include <iostream>
+#include <signal.h>
 
 #include "MA.h"
 #include "utils.h"
 
 using namespace std;
 
+void printer(int signal){
+	printBest();
+	exit(1);
+}
+
 MA::MA(int N_, double pc_, double pm_, double finalTime_){
+	signal(SIGTERM, printer);
 	if (N % 2){ cerr << "El tam. de poblacion debe ser par" << endl; exit(-1); }
 	N = N_;
 	pc = pc_;

@@ -1,3 +1,4 @@
+#include <signal.h>
 #include "SteinerTree.h"
 #include "utils.h"
 using namespace std;
@@ -154,9 +155,14 @@ void SteinerTree::hillClimbing(){
 		for(int i = 0; i < SteinerTreeproblem->n; i++){
 			if((SteinerTreeproblem->fixed)[p[i]]) continue;
 			if (fitness < best){
+				sigset_t sign;
+				sigemptyset(&sign);
+				sigaddset(&sign, SIGTERM);
+				sigprocmask(SIG_BLOCK, &sign, NULL);
 				//printf("Fitness = %lld\n", fitness);
 				best = fitness;
 				bestI = *this;
+				sigprocmask(SIG_UNBLOCK, &sign, NULL);
 				//printBest();
 			}
 			//best = min(best, fitness);

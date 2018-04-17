@@ -18,6 +18,7 @@ struct edge{
 	}
 };
 
+void printBest();
 
 class SteinerTreeProblem{
 	public:
