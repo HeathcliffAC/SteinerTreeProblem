@@ -306,18 +306,29 @@ void join(int u, int v){
 }
 
 
+
 bool first = true;
 void SteinerTree::restart(){
 	I.resize(SteinerTreeproblem->n, false);
-	for(int i = 0; i < (int)(SteinerTreeproblem->fs).size(); i++) I[(SteinerTreeproblem->fs)[i]] = true;
+	for(int i = 0; i < (int)(SteinerTreeproblem->fs).size(); i++)
+		I[(SteinerTreeproblem->fs)[i]] = true;
 	init(I);
 	int ttl = (int)(SteinerTreeproblem->fs).size();
 	mx = 1;
+	
+	for(int i = 0; i < (int)(SteinerTreeproblem->fs).size(); i++){
+		int u = (SteinerTreeproblem->fs)[i];
+		FOREACH(v, (SteinerTreeproblem->adj)[u]) if(I[v->first]){
+			edges.insert(edge(min(u, v->first), max(u, v->first), v->second));
+			join(u, v->first);
+		}
+	}
 	
 	vector<int> vc;
 	for(int i = 0; i < (SteinerTreeproblem->n); i++) if(!I[i]) vc.push_back(i);
 	
 	while(mx != ttl){
+		printf("mx = %d, ttl = %d\n", mx, ttl);
 		int id = rand()%((int)vc.size());
 		int u = vc[id];
 		I[u] = true;
