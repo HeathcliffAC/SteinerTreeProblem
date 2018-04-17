@@ -166,7 +166,7 @@ void SteinerTree::hillClimbing(){
 				sigemptyset(&sign);
 				sigaddset(&sign, SIGTERM);
 				sigprocmask(SIG_BLOCK, &sign, NULL);
-				printf("Fitness = %lld\n", fitness);
+				//printf("Fitness = %lld\n", fitness);
 				best = fitness;
 				bestI = *this;
 				sigprocmask(SIG_UNBLOCK, &sign, NULL);

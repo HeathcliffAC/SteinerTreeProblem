@@ -1,6 +1,110 @@
+int getRandomInteger0_N(int n);//get random integer [0, n]
+double generateRandomDouble0_Max(double maxValue);
+#include <stdlib.h>
+
+int getRandomInteger0_N(int n){ 
+  return (int) ((n + 1.0)*rand()/(RAND_MAX+1.0));
+}
+
+double generateRandomDouble0_Max(double maxValue){
+	return (double)(rand()) / RAND_MAX * maxValue;
+}
+#ifndef __STEINER_TREE_H__
+#define __STEINER_TREE_H__
+
+#include <bits/stdc++.h>
+using namespace std;
+#define FOREACH(i, v) for (__typeof((v).begin()) i = (v).begin(); i != (v).end(); i++)
+
+extern volatile bool finished;
+
+struct edge{
+	long long w;
+	int u, v;
+	edge(int u, int v, long long w){
+		this->u = u;
+		this->v = v;
+		this->w = w;
+	}
+	edge(){
+	
+	}
+};
+
+void printBest();
+
+class SteinerTreeProblem{
+	public:
+		SteinerTreeProblem();
+		~SteinerTreeProblem(){
+		
+		}
+		vector<vector<pair<int, long long> > > adj;
+		vector<edge> edges;
+		vector<bool> fixed;
+		vector<int> fs;
+		int n, m;
+
+};
+
+
+class DSU{
+	public:
+		DSU(int n);
+		DSU(){
+		
+		}
+		~DSU(){
+		
+		}
+		int getS(int u);
+		bool sameSet(int u, int v);
+		void join(int u, int v);
+		void reset();
+		vector<int> p;
+		unordered_set<int> used;
+};
+
+
+class SteinerTree{
+	public:
+		SteinerTree(){
+		
+		}
+		~SteinerTree(){
+		
+		}
+		void restart();
+		void reset(vector<bool> &nI);
+		long long calculateFitnessComplete();
+		int getDistance(SteinerTree &ind);
+		//ostream& operator<< (ostream &os, const SteinerTree &ST);
+		//void print(ostream &os) const;
+		void getMST(unordered_map<int, vector<pair<int, long long> > > &mst);
+		void dependentMutation(double pm);
+		void uniformMutation(double pm);
+		void pathMutation(int k);
+		void localSearch();
+		void hillClimbing();
+		void dependentCrossover(SteinerTree &ind);
+		void uniformCrossover(SteinerTree &ind);
+		void addCrossover(SteinerTree &ind2);
+		bool calculateFitness();
+		void insert(int u);
+		void erase(int u);
+		void print(unordered_map<int, vector<pair<int, long long> > > &mst);
+		bool isCorrect(unordered_map<int, vector<pair<int, long long> > > &mst);
+
+		vector<bool> I;
+		long long fitness;
+		set<edge> edges;
+		static SteinerTreeProblem *SteinerTreeproblem;
+
+
+};
+
+#endif
 #include <signal.h>
-#include "SteinerTree.h"
-#include "utils.h"
 using namespace std;
 
 bool volatile finished = false;
@@ -166,7 +270,7 @@ void SteinerTree::hillClimbing(){
 				sigemptyset(&sign);
 				sigaddset(&sign, SIGTERM);
 				sigprocmask(SIG_BLOCK, &sign, NULL);
-				printf("Fitness = %lld\n", fitness);
+				//printf("Fitness = %lld\n", fitness);
 				best = fitness;
 				bestI = *this;
 				sigprocmask(SIG_UNBLOCK, &sign, NULL);
@@ -484,3 +588,231 @@ void SteinerTree::print(unordered_map<int, vector<pair<int, long long> > > &mst)
 
 
 
+#ifndef __MA_H__
+#define __MA_H__
+
+
+struct ExtendedIndividual {
+	SteinerTree ind;
+	int dist;
+};
+
+class MA {
+	public:
+		MA(int N_, double pc_, double pm_, double finalTime_);
+		void run();
+	private:
+		//Parameters of MA
+		int N;//Population Size
+		double pc;//crossover probability
+		double pm;//mutation probability
+		double finalTime;//Seconds
+
+		//Basic procedures of MA
+		void initPopulation();
+		void initDI();
+		void selectParents();
+		void crossover();
+		void mutation();
+		void localSearch();
+		void replacement();
+
+		//Internal attributes of MA
+		vector< ExtendedIndividual * > population; 
+		vector< ExtendedIndividual * > parents;
+		vector< ExtendedIndividual * > offspring;
+		double initialTime;
+		double DI;
+};
+
+#endif
+#include <sys/time.h>
+#include <iostream>
+#include <signal.h>
+
+
+using namespace std;
+
+void printer(int signal){
+	finished = true;
+}
+
+MA::MA(int N_, double pc_, double pm_, double finalTime_){
+	signal(SIGTERM, printer);
+	if (N % 2){ cerr << "El tam. de poblacion debe ser par" << endl; exit(-1); }
+	N = N_;
+	pc = pc_;
+	pm = pm_;
+	finalTime = finalTime_;
+	struct timeval currentTime; 
+	gettimeofday(&currentTime, NULL);
+	initialTime = (double) (currentTime.tv_sec) + (double) (currentTime.tv_usec)/1.0e6;
+}
+
+void MA::initPopulation(){
+	for (int i = 0; i < N; i++){
+		//cout << "Crea ind " << i << endl;
+		ExtendedIndividual *ei = new ExtendedIndividual();
+		ei->ind.restart();
+		population.push_back(ei);	
+	}
+}
+
+//Select parents with binary selection
+void MA::selectParents(){
+	parents.clear();
+	for (int i = 0; i < N; i++){
+		int first = getRandomInteger0_N(N - 1);
+		int second = getRandomInteger0_N(N - 1);
+		if (population[first]->ind.fitness <= population[second]->ind.fitness){
+			parents.push_back(population[first]);
+		} else {
+			parents.push_back(population[second]);
+		}
+	}
+}
+
+void MA::crossover(){
+	for (int i = 0; i < parents.size(); i++){
+		ExtendedIndividual *ei = new ExtendedIndividual();
+		*ei = *parents[i];
+		offspring.push_back(ei);
+	}
+	for (int i = 0; i < offspring.size(); i+=2){
+		if (generateRandomDouble0_Max(1) <= pc){
+			offspring[i]->ind.dependentCrossover(offspring[i+1]->ind);
+		}
+	}
+}
+
+void MA::mutation(){
+	for (int i = 0; i < offspring.size(); i++){
+		offspring[i]->ind.dependentMutation(pm);
+	}
+}
+
+void MA::localSearch(){
+	for (int i = 0; i < offspring.size(); i++){
+		offspring[i]->ind.localSearch();
+	}
+}
+
+
+void MA::replacement(){
+	vector < ExtendedIndividual* > all;
+	
+	//Join population and offspring
+	for (int i = 0; i < population.size(); i++){
+		all.push_back(population[i]);
+		all.back()->dist = INT_MAX;
+	}
+	population.clear();
+	for (int i = 0; i < offspring.size(); i++){
+		all.push_back(offspring[i]);
+		all.back()->dist = INT_MAX;
+	}
+	offspring.clear();
+	
+	//Select best solution
+	int indexBest = 0;
+	for (int i = 1; i < all.size(); i++){
+		if (all[i]->ind.fitness < all[indexBest]->ind.fitness){
+			indexBest = i;
+		}
+	}
+	population.push_back(all[indexBest]);
+	all[indexBest] = all.back();
+	all.pop_back();
+
+	struct timeval currentTime; 
+	gettimeofday(&currentTime, NULL);
+	double elapsedTime = (double) (currentTime.tv_sec) + (double) (currentTime.tv_usec)/1.0e6;
+	elapsedTime -= initialTime;
+
+	//Select next N - 1 solution
+	double D = DI - DI * elapsedTime / finalTime;
+	//cout << "Distancia requerida: " << D << endl;
+	while(population.size() != N){
+		//Update distances
+		for (int i = 0; i < all.size(); i++){
+			all[i]->dist = min(all[i]->dist, all[i]->ind.getDistance(population.back()->ind));
+		}
+		//Select best option
+		indexBest = 0;
+		for (int i = 1; i < all.size(); i++){
+			bool betterInDist =	(all[i]->dist > all[indexBest]->dist);
+			bool eqInDist = (all[i]->dist == all[indexBest]->dist);
+			bool betterInFit = (all[i]->ind.fitness < all[indexBest]->ind.fitness);
+			bool eqInFit = (all[i]->ind.fitness == all[indexBest]->ind.fitness);
+			if (all[indexBest]->dist < D){//Do not fulfill distance requirement
+				if ((betterInDist) || (eqInDist && betterInFit)){
+					indexBest = i;
+				}
+			} else {
+				if (all[i]->dist >= D){
+					if ((betterInFit) || (eqInFit && betterInDist)){
+						indexBest = i;
+					}
+				}
+			}
+		}
+		//Insert best option
+		population.push_back(all[indexBest]);
+		all[indexBest] = all.back();
+		all.pop_back();
+	}
+	//Release memory
+	for (int i = 0; i < all.size(); i++){
+		delete(all[i]);
+	}
+}
+
+void MA::initDI(){
+	double meanDistance = 0;
+	for (int i = 0; i < population.size(); i++){
+		for (int j = i + 1; j < population.size(); j++){
+			meanDistance += population[i]->ind.getDistance(population[j]->ind);
+			//cout << "Distancia: " << population[i]->ind.getDistance(population[j]->ind) << endl;
+		}
+	}
+	meanDistance /= (population.size() * (population.size() - 1)) / 2;
+	DI = meanDistance * 1;//TODO: Check
+}
+
+void MA::run(){
+	initPopulation();
+	initDI();
+	int generation = 0;
+	while(true){//Infinitas generaciones
+		int minDistance = INT_MAX;
+		for (int i = 0; i < population.size(); i++){
+			for (int j = i + 1; j < population.size(); j++){
+				minDistance = min(minDistance, population[i]->ind.getDistance(population[j]->ind));
+			}
+		}
+		//cout << "Distancia: " << minDistance << endl;
+
+		//cout << "Generacion " << generation << endl;
+		selectParents();
+		crossover();
+		mutation();
+		localSearch();
+		replacement();
+		generation++;
+	}
+	printBest();
+}
+
+
+int main(int argc, char **argv){
+	int N = 50;
+	double pc = 0.9;
+	double pm = 0.01;
+	double finalTime = 25 * 60;
+	MA ma(N, pc, pm, finalTime);
+	srand(time(NULL));
+	//string file = string(argv[1]);
+	SteinerTreeProblem STP;
+	SteinerTree::SteinerTreeproblem = &STP;
+	ma.run();
+}
