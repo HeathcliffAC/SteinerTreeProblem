@@ -328,7 +328,7 @@ void SteinerTree::restart(){
 	for(int i = 0; i < (SteinerTreeproblem->n); i++) if(!I[i]) vc.push_back(i);
 	
 	while(mx != ttl){
-		printf("mx = %d, ttl = %d\n", mx, ttl);
+		//printf("mx = %d, ttl = %d\n", mx, ttl);
 		int id = rand()%((int)vc.size());
 		int u = vc[id];
 		I[u] = true;
