@@ -141,7 +141,6 @@ void printBest(){
 	if (!bestI.isCorrect(mst)){
 		cout << "Error interno!!!!" << endl;
 	}
-	// printf("%s\n", bestI.isCorrect(mst) ? "YES" : "NO");
 }
 
 
@@ -193,7 +192,7 @@ void SteinerTree::hillClimbing(){
 			}
 			noImprove++;
 			reset(nI);
-			if(noImprove > 10) return;
+			if(noImprove > 5) return;
 		}
 	}
 }
