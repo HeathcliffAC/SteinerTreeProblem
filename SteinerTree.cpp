@@ -137,8 +137,9 @@ void printBest(){
 	unordered_map<int, vector<pair<int, long long> > > mst;
 	bestI.getMST(mst);
 	//bestI.print(mst);
-	printf("%s\n", bestI.isCorrect(mst) ? "YES" : "NO");
-	getchar();
+	bool correct = bestI.isCorrect(mst);
+	printf("%s\n", correct ? "YES" : "NO");
+	if(!correct) getchar();
 }
 
 
@@ -187,7 +188,7 @@ void SteinerTree::hillClimbing(){
 			}
 			noImprove++;
 			reset(nI);
-			if(noImprove > 10) return;
+			if(noImprove > 5) return;
 		}
 	}
 }
