@@ -481,5 +481,55 @@ void SteinerTree::print(unordered_map<int, vector<pair<int, long long> > > &mst)
             cout << it->first + 1 << " " << v->first + 1 << endl;
 }
 
+void SteinerTree::dijkstra(int u, int N, vector<long long> &disti, vector<vector<pair<int, long long> > > &adj){
+    long long INF = 1e18;
+    vector<bool> visit(N);
+
+    for(int i=0; i<N; i++){
+        disti[i] = INF;
+        visit[i] = false;
+    }
+
+    priority_queue<pair<long long, int>, vector<pair<long long, int> >, greater<pair<long long, int> > >pq;
+    pq.push(make_pair(0ll, u));
+
+    pair<long long, int> s;
+
+    while(!pq.empty()){
+        s = pq.top();
+        pq.pop();
+
+        int nd = s.second;
+
+        if(visit[nd]) continue;
+        visit[nd] = true;
+        disti[nd] = s.first;
+
+        int sz = adj[nd].size();
+        for(int i=0; i<sz; i++){
+            int next = adj[nd][i].first;
+            long long cost = adj[nd][i].second;
+
+            if(disti[next] > disti[nd] + cost){
+                disti[next] = disti[nd] + cost;
+                pq.push(make_pair(disti[next], next));
+            }
+        }
+    }
+}
+
+void SteinerTree::all_min_dist(vector<vector<pair<int, long long> > > &adj, vector<vector<long long> > &dist, vector<bool> &G){
+    int N = dist.size();
+
+    dist.resize(N);
+    for(int i=0; i<N; i++)  dist[i].resize(N);
+
+    for(int i=0; i<N; i++){
+        if(G[i]){
+            dijkstra(i, N, dist[i], adj);
+        }
+    }
+}
+
 
 
