@@ -83,6 +83,8 @@ class SteinerTree{
 		void erase(int u);
 		void print(unordered_map<int, vector<pair<int, long long> > > &mst);
 		bool isCorrect(unordered_map<int, vector<pair<int, long long> > > &mst);
+		void dijkstra(int u, int N, vector<long long> &disti, vector<vector<pair<int, long long> > > &adj);
+		void all_min_dist(vector<vector<pair<int, long long> > > &adj, vector<vector<long long> > &dist, vector<bool> &G);
 
 		vector<bool> I;
 		long long fitness;
