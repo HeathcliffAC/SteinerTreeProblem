@@ -160,7 +160,6 @@ void printBest(){
 	//printf("%s\n", correct ? "YES" : "NO");
 	if(!correct){
 		printf("NO\n");
-		//getchar();
 	}
 	else bestI.print(mst);
 }
@@ -300,6 +299,7 @@ SteinerTreeProblem::SteinerTreeProblem(){
 		edges.push_back(edge(u, v, w));
 		adj[u].push_back(make_pair(v, w));
 		adj[v].push_back(make_pair(u, w));
+		//if(w == 0) while(true) printf("u = %d, v = %d\n", u, v);
 	}
 	sort(edges.begin(), edges.end());
 	cin >> s;
@@ -527,7 +527,9 @@ void SteinerTree::print(unordered_map<int, vector<pair<int, long long> > > &mst)
             cout << it->first + 1 << " " << v->first + 1 << endl;
 }
 
-unordered_map<int, int> hsh_r;
+vector<int> hsh_r;
+
+int tol;
 
 void SteinerTreeProblem::dijkstra(vector<int> &u, vector<long long> &dist, vector<int> &p, vector<bool> &tree, priority_queue<pair<long long, int>, vector<pair<long long, int> >, greater<pair<long long, int> > > &pq, vector<bool> &I){
 	if(p.empty()){
@@ -542,6 +544,8 @@ void SteinerTreeProblem::dijkstra(vector<int> &u, vector<long long> &dist, vecto
 		tree[u[i]] = true;
 		dist[u[i]] = 0; pq.push(make_pair(dist[u[i]], u[i]));
 	}
+	bool found = false;
+	long long value = -1e15;
 	while(!pq.empty()){
 		pair<long long, int> tmp = pq.top(); pq.pop();
 		long long d = tmp.first;
@@ -557,15 +561,22 @@ void SteinerTreeProblem::dijkstra(vector<int> &u, vector<long long> &dist, vecto
 					pq.push(make_pair(dist[v], v));
 					hsh_r[v] = 1;
 				}
-				else if(dist[v] == dist[n] + w){
+				else if(dist[v] == dist[n] + w && w != 0){
 					if(rand()/(RAND_MAX + 1.0) < 1.0/hsh_r[v]) p[v] = n;
 					hsh_r[v]++;
 				}
+				/*if(n == p[p[n]]){
+					while(true){
+						printf("%d %d %lld %lld %lld\n", v, n, dist[v], dist[n], w);
+					}
+				}*/
 			}
 		}
 		if (I[n] && (!tree[n])){
-			return;
+			//return;
+			if(!found) value = dist[n], found = true;
 		}
+		if(found && dist[n] > value + 10) return;
 	}
 }
 
@@ -573,7 +584,7 @@ long long fitnessBest = 1e15;
 
 void SteinerTree::evaluateMinDistances(){
 	long long best = 1e15;
-	hsh_r.clear();
+	hsh_r = vector<int>(SteinerTreeproblem->n, 1);
 	vector<bool> Ibest;
 	int cnt_break = 0;
 	vector<bool> bestTree;
@@ -588,11 +599,14 @@ void SteinerTree::evaluateMinDistances(){
 		priority_queue<pair<long long, int>, vector<pair<long long, int> >, greater<pair<long long, int> > > pq;
 		SteinerTreeproblem->dijkstra(nodes, dist, p, tree, pq, I);
 		vector<int> cnt(SteinerTreeproblem->n, 0);
+		int aux = 0;
 		while(true){
+			aux++;
 			long long mn = 1e15;
 			u = -1;
 			int cnt_r = 1;
-			for(int i = 0; i < (SteinerTreeproblem->n); i++){
+			tol = rand()%10;
+			/*for(int i = 0; i < (SteinerTreeproblem->n); i++){
 				if(I[i] && !tree[i]){
 					if(dist[i] < mn) mn = dist[i], u = i, cnt_r = 1;
 					else if(dist[i] == mn){
@@ -601,13 +615,25 @@ void SteinerTree::evaluateMinDistances(){
 					}
 				}
 			}
+			*/
+			for(int i = 0; i < (SteinerTreeproblem->n); i++)
+				if(I[i] && !tree[i]) mn = min(mn, dist[i]);
+			for(int i = 0; i < (SteinerTreeproblem->n); i++)
+				if(I[i] && !tree[i]){
+					if(dist[i] <= mn + tol){
+						if(rand()/(RAND_MAX + 1.0) < 1.0/cnt_r) u = i;
+						cnt_r++;
+					}
+				}
+						
 			if(u == -1) break;
-			fitness += mn;
+			fitness += dist[u];
 			vector<int> path;
 			while(!tree[u]){
 				path.push_back(u);
 				cnt[u]++, cnt[p[u]]++;
 				u = p[u];
+				//printf("size = %d, u = %d, p = %d, it = %d\n", (int)path.size(), u, p[u], aux);
 			}
 			reverse(path.begin(), path.end());
 			//for(int i = 0; i < (int)path.size(); i++) SteinerTreeproblem->dijkstra(path[i], dist, p, tree);
@@ -618,6 +644,7 @@ void SteinerTree::evaluateMinDistances(){
 			}
 		}
 		if(best > fitness){
+			//printf("best = %lld\n", best);                              
 			best = fitness;
 			Ibest = I;
 			bestTree = tree;
@@ -648,6 +675,6 @@ void SteinerTree::evaluateMinDistances(){
 		bestI.I = bestTree;
 	}*/
 	//printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
+	//printBest();
 }
-
 
