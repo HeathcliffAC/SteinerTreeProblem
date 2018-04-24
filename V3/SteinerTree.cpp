@@ -623,7 +623,7 @@ void SteinerTree::evaluateMinDistances(){
 			bestTree = tree;
 			cnt_break = 0;
 			if(fitness < Globalbest){
-				cout << "Va por " << fitness << endl;
+				//cout << "Va por " << fitness << endl;
 				sigset_t sign;
 				sigemptyset(&sign);
 				sigaddset(&sign, SIGTERM);
@@ -647,7 +647,7 @@ void SteinerTree::evaluateMinDistances(){
 		Globalbest = fitness;
 		bestI.I = bestTree;
 	}*/
-	printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
+	//printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
 }
 
 

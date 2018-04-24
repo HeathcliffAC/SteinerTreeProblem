@@ -129,7 +129,7 @@ void MA::replacement(){
 
 	//Select next N - 1 solution
 	double D = DI - DI * elapsedTime / finalTime;
-	cout << "Distancia requerida: " << D << endl;
+	//cout << "Distancia requerida: " << D << endl;
 	set<long long> acceptedFitness;
 	acceptedFitness.insert(population[0]->ind.fitness);
 	while(population.size() != N){
