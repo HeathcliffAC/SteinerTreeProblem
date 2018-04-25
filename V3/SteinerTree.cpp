@@ -675,7 +675,7 @@ void SteinerTree::evaluateMinDistances(){
 		Globalbest = fitness;
 		bestI.I = bestTree;
 	}*/
-	printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
+	//printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
 	//printBest();
 }
 
