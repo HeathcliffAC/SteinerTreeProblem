@@ -473,8 +473,10 @@ void SteinerTree::addCrossover(SteinerTree &ind2){
 			}
 		}
 	}
-	reset(I);
-	ind2.reset(ind2.I);
+	//reset(I);
+	//ind2.reset(ind2.I);
+	calculateFitness();
+	ind2.calculateFitness();
 }
 
 void SteinerTree::uniformCrossover(SteinerTree &ind){
@@ -502,7 +504,8 @@ void SteinerTree::pathMutation(int k){
 		int id = rand()%((int)(SteinerTreeproblem->adj)[u].size());
 		u = (SteinerTreeproblem->adj)[u][id].first;
 	}
-	reset(I);
+	//reset(I);
+	calculateFitness();
 }
 
 void SteinerTree::uniformMutation(double pm){
@@ -534,7 +537,8 @@ void SteinerTree::dependentMutation(double pm){
 }
 
 void SteinerTree::dependentCrossover(SteinerTree &ind){
-	uniformCrossover(ind);
+	//uniformCrossover(ind);
+	addCrossover(ind);
 }
 
 // Guarda en mst el minimum spanning tree del individuo
@@ -609,15 +613,9 @@ void SteinerTreeProblem::dijkstra(vector<int> &u, vector<long long> &dist, vecto
 					if(rand()/(RAND_MAX + 1.0) < 1.0/hsh_r[v]) p[v] = n;
 					hsh_r[v]++;
 				}
-				/*if(n == p[p[n]]){
-					while(true){
-						printf("%d %d %lld %lld %lld\n", v, n, dist[v], dist[n], w);
-					}
-				}*/
 			}
 		}
 		if (I[n] && (!tree[n])){
-			//return;
 			if(!found) value = dist[n], found = true;
 		}
 		if(found && dist[n] > value + 10) return;
@@ -677,12 +675,7 @@ void SteinerTree::evaluateMinDistances(){
 			}
 		}
 		
-		//printf("fitness = %lld\n", fitness);
-		if(rand()%10 == 0) SteinerTreeproblem->transform(I, tree, fitness);
-		//printf("fitness = %lld\n", fitness);
-		
-		if(best > fitness){
-			//printf("best = %lld\n", best);                              
+		if(best > fitness){                            
 			best = fitness;
 			Ibest = I;
 			bestTree = tree;
