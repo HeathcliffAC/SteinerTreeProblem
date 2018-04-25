@@ -605,7 +605,8 @@ void SteinerTree::evaluateMinDistances(){
 			long long mn = 1e15;
 			u = -1;
 			int cnt_r = 1;
-			tol = rand()%10;
+			if(rand()%2 == 0) tol = 0;
+			else tol = rand()%9 + 1;
 			/*for(int i = 0; i < (SteinerTreeproblem->n); i++){
 				if(I[i] && !tree[i]){
 					if(dist[i] < mn) mn = dist[i], u = i, cnt_r = 1;
@@ -674,7 +675,7 @@ void SteinerTree::evaluateMinDistances(){
 		Globalbest = fitness;
 		bestI.I = bestTree;
 	}*/
-	//printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
+	printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
 	//printBest();
 }
 
