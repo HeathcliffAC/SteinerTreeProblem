@@ -33,7 +33,7 @@ void MA::initPopulation(){
 		ExtendedIndividual *ei = new ExtendedIndividual();
 		ei->ind.restart();
 		population.push_back(ei);
-		if ((population.size() >= 20) && (population.size() % 2 == 0)){
+		if ((population.size() >= 4) && (population.size() % 2 == 0)){
 			struct timeval currentTime;
 			gettimeofday(&currentTime, NULL);
 			double time2 = ((double) (currentTime.tv_sec) * 1.0e6 + (double) (currentTime.tv_usec))/1.0e6;

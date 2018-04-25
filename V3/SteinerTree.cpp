@@ -37,10 +37,16 @@ void DSU::join(int u, int v){
 }
 
 void DSU::reset(){
+	if(p.empty()) DSU(n);
 	FOREACH(u, used) p[*u] = *u;
 	used.clear();
 }
 
+
+void DSU::reset(int n){
+	if(p.empty()) DSU(n);
+	else reset();
+}
 
 //////////////////////////// Funciones del individuo ////////////////////////////////
 
@@ -62,8 +68,15 @@ bool continuar = false;
 
 // Calcula fitness, devuelve si esta conectado, poda las hojas no necesarias
 bool SteinerTree::calculateFitness(){
-	evaluateMinDistances();
-	if(!continuar) return true;
+	if(!continuar){
+		evaluateMinDistances();
+		return true;
+	}
+	
+	edges.clear();
+	for(int u = 0; u < (SteinerTreeproblem->n); u++) if(I[u]){
+		FOREACH(v, (SteinerTreeproblem->adj)[u]) if(u < v->first && I[v->first]) edges.insert(edge(u, v->first, v->second));
+	}
 	fitness = 0;
 	unordered_map<int, int> cnt;
 	
@@ -84,13 +97,8 @@ bool SteinerTree::calculateFitness(){
 	int Su = -1;
 	Su = dsu.getS((SteinerTreeproblem->fs)[0]);
 	FOREACH(u, SteinerTreeproblem->fs) if(dsu.getS(*u) != Su) connected = false;
-	//FOREACH(v, dsu.used) if(dsu.getS(*v) != Su) connected = false;
-	//int t = 0;
-	//for(int u = 0; u < (SteinerTreeproblem->n); u++) if((SteinerTreeproblem->fixed)[u] && dsu.getS(u) != Su) connected = false;
-	//connected = (c == t - 1);
 	if(connected){
 		queue<int> q;
-		//for(int u = 0; u < (SteinerTreeproblem->n); u++) if(cnt.count(u) == 0 && I[u]) I[u] = false;
 		FOREACH(v, dsu.used) if(cnt[*v] == 1 && !(SteinerTreeproblem->fixed)[*v]) q.push(*v);
 		while(!q.empty()){
 			int u = q.front(); q.pop();
@@ -102,11 +110,47 @@ bool SteinerTree::calculateFitness(){
 				if(cnt[v->first] == 1 && !(SteinerTreeproblem->fixed)[v->first]) q.push(v->first);
 			}
 		}
+		/*for(int i = 0; i < (SteinerTreeproblem->n); i++){
+			if((SteinerTreeproblem->fixed)[i] || cnt[i] >= 3) I[i] = true;
+			else I[i] = false;
+		}*/
 	}
 	else fitness = (long long)1e15;
 	dsu.reset();
 	return connected;
 }
+
+
+void SteinerTreeProblem::transform(vector<bool> &I, vector<bool> &tree, long long &fitness){
+	unordered_map<int, vector<pair<int, long long> > > mst;
+	unordered_map<int, int> cnt;
+	fitness = 0;
+	dsu.reset(n);
+	FOREACH(e, edges) if(tree[e->u] && tree[e->v] && !dsu.sameSet(e->u, e->v)){
+		dsu.join(e->u, e->v);
+		cnt[e->u]++, cnt[e->v]++;
+		fitness += e->w;
+		mst[e->u].push_back(make_pair(e->v, e->w));
+		mst[e->v].push_back(make_pair(e->u, e->w));
+	}
+	dsu.reset();
+	queue<int> q;
+	for(int i = 0; i < n; i++) if(!fixed[i] && cnt[i] == 1) q.push(i);
+	while(!q.empty()){
+		int u = q.front(); q.pop();
+		tree[u] = false;
+		FOREACH(v, mst[u]) if(tree[v->first]){
+			cnt[v->first]--;
+			fitness -= v->second;
+			if(cnt[v->first] == 1 && !fixed[v->first]) q.push(v->first);
+		}
+	}
+	for(int i = 0; i < n; i++){
+		if(fixed[i] || cnt[i] >= 3) I[i] = true;
+		else I[i] = false;
+	}
+}
+
 
 // Inserta el nodo u al individuo
 void SteinerTree::insert(int u){
@@ -607,16 +651,6 @@ void SteinerTree::evaluateMinDistances(){
 			int cnt_r = 1;
 			if(rand()%2 == 0) tol = 0;
 			else tol = rand()%9 + 1;
-			/*for(int i = 0; i < (SteinerTreeproblem->n); i++){
-				if(I[i] && !tree[i]){
-					if(dist[i] < mn) mn = dist[i], u = i, cnt_r = 1;
-					else if(dist[i] == mn){
-						if(rand()/(RAND_MAX + 1.0) < 1.0/cnt_r) u = i;
-						cnt_r++;
-					}
-				}
-			}
-			*/
 			for(int i = 0; i < (SteinerTreeproblem->n); i++)
 				if(I[i] && !tree[i]) mn = min(mn, dist[i]);
 			for(int i = 0; i < (SteinerTreeproblem->n); i++)
@@ -634,16 +668,19 @@ void SteinerTree::evaluateMinDistances(){
 				path.push_back(u);
 				cnt[u]++, cnt[p[u]]++;
 				u = p[u];
-				//printf("size = %d, u = %d, p = %d, it = %d\n", (int)path.size(), u, p[u], aux);
 			}
 			reverse(path.begin(), path.end());
-			//for(int i = 0; i < (int)path.size(); i++) SteinerTreeproblem->dijkstra(path[i], dist, p, tree);
 			SteinerTreeproblem->dijkstra(path, dist, p, tree, pq, I);
 			if (finished){
 				printBest();
 				exit(0);
 			}
 		}
+		
+		//printf("fitness = %lld\n", fitness);
+		if(rand()%10 == 0) SteinerTreeproblem->transform(I, tree, fitness);
+		//printf("fitness = %lld\n", fitness);
+		
 		if(best > fitness){
 			//printf("best = %lld\n", best);                              
 			best = fitness;
@@ -675,7 +712,7 @@ void SteinerTree::evaluateMinDistances(){
 		Globalbest = fitness;
 		bestI.I = bestTree;
 	}*/
-	//printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
+	printf("best = %lld, fitness = %lld\n", Globalbest, fitness);
 	//printBest();
 }
 

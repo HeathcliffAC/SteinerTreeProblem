@@ -29,6 +29,7 @@ class SteinerTreeProblem{
 		
 		}
 		void dijkstra(vector<int> &u, vector<long long> &dist, vector<int> &p, vector<bool> &done, priority_queue<pair<long long, int>, vector<pair<long long, int> >, greater<pair<long long, int> > > &pq, vector<bool> &I);
+		void transform(vector<bool> &I, vector<bool> &tree, long long &fitness);
 		vector<vector<pair<int, long long> > > adj;
 		vector<edge> edges;
 		vector<bool> fixed;
@@ -50,6 +51,7 @@ class DSU{
 		bool sameSet(int u, int v);
 		void join(int u, int v);
 		void reset();
+		void reset(int n);
 		vector<int> p;
 		unordered_set<int> used;
 };
